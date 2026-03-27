@@ -1,4 +1,5 @@
-import { FC, useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
+import type { FC } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { LayoutDashboard, Users, Clock, FileText, PhilippinePeso, Shield, Package, Settings, ArrowRight } from 'lucide-react';
 

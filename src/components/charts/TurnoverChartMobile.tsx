@@ -42,11 +42,11 @@ const mobileOptions = {
             color: '#222',
             font: {
                 size: 12,
-                weight: '600' as const,
+                weight: 'bold' as const,
             },
         },
         tooltip: {
-            mode: 'index',
+            mode: 'index' as const,
             intersect: false,
             bodyFont: { size: 12 },
         }
@@ -68,7 +68,7 @@ const mobileOptions = {
             ticks: {
                 maxRotation: 0,
                 minRotation: 0,
-                callback: function (val: any, index: number) {
+                callback: function (_val: any, index: number) {
                     // show only short month names
                     const short = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
                     return short[index] || '';
@@ -102,7 +102,7 @@ const dataMobile = {
 export default function TurnoverChartMobile() {
     return (
         <div className="w-full h-40 sm:h-44">
-            <Line options={mobileOptions} data={dataMobile} />
+            <Line options={mobileOptions as any} data={dataMobile} />
         </div>
     );
 }

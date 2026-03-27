@@ -89,7 +89,7 @@ export function TurnoverChart() {
     // responsive height: smaller on mobile, larger on desktop
     return (
         <div className="w-full h-48 sm:h-56 md:h-64 lg:h-72">
-            <Line options={options} data={data} />
+            <Line options={options as any} data={data} />
         </div>
     );
 }

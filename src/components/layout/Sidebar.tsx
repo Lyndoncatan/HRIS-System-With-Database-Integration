@@ -2,7 +2,7 @@
 import {
     Home, Users, Clock, FileText, PhilippinePeso, Shield,
     Package, Settings, ChevronLeft, ChevronRight, LogOut,
-    Newspaper, BarChart3, Building2, HelpCircle, ArrowLeft, X
+    Newspaper, BarChart3, Building2, HelpCircle, X
 } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
@@ -16,11 +16,16 @@ interface SidebarProps {
 }
 
 const Sidebar = ({ isMobileOpen, onClose, collapsed = false, onToggleCollapse }: SidebarProps) => {
-    const { role, logout } = useAuth();
+    const { role, logout, user } = useAuth();
 
-    const handleLogout = () => {
-        logout();
-        window.location.href = '/login';
+    // Extract user info from Supabase
+    const userMeta = user?.user_metadata;
+    const avatarUrl = userMeta?.avatar_url || userMeta?.picture || null;
+    const displayName = userMeta?.full_name || userMeta?.name || user?.email?.split('@')[0] || (role === 'admin' ? 'Admin' : 'Employee');
+    const userEmail = user?.email || '';
+
+    const handleLogout = async () => {
+        await logout();
     };
 
     const mainNav = [{ icon: Home, label: 'Dashboard', path: '/dashboard' }];
@@ -127,6 +132,44 @@ const Sidebar = ({ isMobileOpen, onClose, collapsed = false, onToggleCollapse }:
                 </nav>
 
                 <div className="border-t border-white/10 p-3 space-y-2">
+                    {/* User Profile */}
+                    {!collapsed && (
+                        <div className="flex items-center gap-3 px-2 py-2">
+                            {avatarUrl ? (
+                                <img
+                                    src={avatarUrl}
+                                    alt={displayName}
+                                    className="w-9 h-9 rounded-xl object-cover flex-shrink-0"
+                                    referrerPolicy="no-referrer"
+                                />
+                            ) : (
+                                <div className="w-9 h-9 rounded-xl bg-white/15 flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
+                                    {displayName.charAt(0).toUpperCase()}
+                                </div>
+                            )}
+                            <div className="min-w-0">
+                                <p className="text-white text-xs font-semibold truncate">{displayName}</p>
+                                <p className="text-emerald-300/50 text-[10px] truncate">{userEmail}</p>
+                            </div>
+                        </div>
+                    )}
+                    {collapsed && (
+                        <div className="flex justify-center py-1">
+                            {avatarUrl ? (
+                                <img
+                                    src={avatarUrl}
+                                    alt={displayName}
+                                    className="w-8 h-8 rounded-xl object-cover"
+                                    referrerPolicy="no-referrer"
+                                />
+                            ) : (
+                                <div className="w-8 h-8 rounded-xl bg-white/15 flex items-center justify-center text-white text-xs font-bold">
+                                    {displayName.charAt(0).toUpperCase()}
+                                </div>
+                            )}
+                        </div>
+                    )}
+
                     <button
                         onClick={onToggleCollapse}
                         className="hidden lg:flex w-full items-center justify-center gap-2 px-3 py-2 rounded-xl text-emerald-200/60 hover:bg-white/8 hover:text-white transition-all text-xs font-medium"

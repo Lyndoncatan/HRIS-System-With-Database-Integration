@@ -32,7 +32,13 @@ interface TopBarProps {
 const TopBar = ({ onMenuClick }: TopBarProps) => {
     const [time, setTime] = useState(new Date());
     const location = useLocation();
-    const { role } = useAuth();
+    const { role, user } = useAuth();
+
+    // Extract user info from Supabase
+    const userMeta = user?.user_metadata;
+    const avatarUrl = userMeta?.avatar_url || userMeta?.picture || null;
+    const displayName = userMeta?.full_name || userMeta?.name || user?.email?.split('@')[0] || (role === 'admin' ? 'Admin' : 'Employee');
+    const userEmail = user?.email || '';
 
     const { notifications: leaveNotifications, markNotificationRead, clearNotifications } = useLeave();
     const [showNotifications, setShowNotifications] = useState(false);
@@ -272,15 +278,24 @@ const TopBar = ({ onMenuClick }: TopBarProps) => {
                 </div>
 
                 <div className="flex items-center gap-3 pl-2 sm:pl-4 border-l border-gray-200">
-                    <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center text-white text-sm font-bold shadow-sm">
-                        {role === 'admin' ? 'A' : 'U'}
-                    </div>
+                    {avatarUrl ? (
+                        <img
+                            src={avatarUrl}
+                            alt={displayName}
+                            className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl object-cover shadow-sm"
+                            referrerPolicy="no-referrer"
+                        />
+                    ) : (
+                        <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center text-white text-sm font-bold shadow-sm">
+                            {displayName.charAt(0).toUpperCase()}
+                        </div>
+                    )}
                     <div className="hidden lg:block">
-                        <p className="text-xs font-semibold text-gray-800">
-                            {role === 'admin' ? 'Admin User' : 'Employee User'}
+                        <p className="text-xs font-semibold text-gray-800 truncate max-w-[140px]">
+                            {displayName}
                         </p>
-                        <p className="text-[10px] text-gray-400">
-                            {role === 'admin' ? 'HR Administrator' : 'Employee'}
+                        <p className="text-[10px] text-gray-400 truncate max-w-[140px]">
+                            {userEmail || (role === 'admin' ? 'HR Administrator' : 'Employee')}
                         </p>
                     </div>
                 </div>

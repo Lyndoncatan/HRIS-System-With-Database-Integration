@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Users, UserCheck, UserX, UserPlus, TrendingUp, Clock, FileText, PhilippinePeso, ArrowUpRight, CalendarDays, Star, Briefcase, CheckCircle2, Calendar, Megaphone, Gift, BookOpen } from 'lucide-react';
+import { Users, UserCheck, UserX, UserPlus, TrendingUp, Clock, FileText, PhilippinePeso, ArrowUpRight, CalendarDays, Star, CheckCircle2, Calendar, Megaphone } from 'lucide-react';
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, ArcElement, Tooltip, Legend } from 'chart.js';
 import { Bar, Doughnut } from 'react-chartjs-2';
 import { useAuth } from '../context/AuthContext';
@@ -10,7 +10,8 @@ ChartJS.register(CategoryScale, LinearScale, BarElement, ArcElement, Tooltip, Le
 /* ─────────────── USER DASHBOARD ─────────────── */
 const UserDashboard = () => {
     const navigate = useNavigate();
-    const [time] = useState(new Date());
+    const { user } = useAuth();
+    const firstName = user?.user_metadata?.full_name?.split(' ')[0] || user?.user_metadata?.name?.split(' ')[0] || user?.email?.split('@')[0] || 'there';
 
     const statCards = [
         { label: 'Leaves Available', value: '12.5 Days', sub: '8 Vacation, 4.5 Sick', icon: Calendar, gradient: 'linear-gradient(135deg, #059669 0%, #10b981 100%)' },
@@ -43,12 +44,8 @@ const UserDashboard = () => {
         { icon: '📚', title: 'Learning & Development', desc: 'Up To ₱500/Year For Courses And Certifications To Advance Your Career.', color: '#dc2626' },
     ];
 
-    const greeting = () => {
-        const h = time.getHours();
-        if (h < 12) return 'Good Morning';
-        if (h < 17) return 'Good Afternoon';
-        return 'Good Evening';
-    };
+
+
 
     return (
         <div className="space-y-6 pb-6">
@@ -57,7 +54,7 @@ const UserDashboard = () => {
                 <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/4" />
                 <div className="absolute bottom-0 left-1/3 w-32 h-32 bg-white/5 rounded-full translate-y-1/2" />
                 <div className="relative z-10">
-                    <h1 className="text-2xl font-bold">Welcome back, Rafael! 👋</h1>
+                    <h1 className="text-2xl font-bold">Welcome back, {firstName}! 👋</h1>
                     <p className="text-sm text-emerald-100/80 mt-1">It's a great day to do great work. You have 1 new notification.</p>
                 </div>
             </div>
@@ -173,6 +170,8 @@ const UserDashboard = () => {
 /* ─────────────── ADMIN DASHBOARD ─────────────── */
 const AdminDashboard = () => {
     const [time, setTime] = useState(new Date());
+    const { user } = useAuth();
+    const firstName = user?.user_metadata?.full_name?.split(' ')[0] || user?.user_metadata?.name?.split(' ')[0] || user?.email?.split('@')[0] || 'Admin';
 
     useState(() => {
         const timer = setInterval(() => setTime(new Date()), 1000);
@@ -249,7 +248,7 @@ const AdminDashboard = () => {
                             {time.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
                         </span>
                     </div>
-                    <h1 className="text-2xl font-bold">{greeting()}, Admin! 👋</h1>
+                    <h1 className="text-2xl font-bold">{greeting()}, {firstName}! 👋</h1>
                     <p className="text-sm text-emerald-100/70 mt-1">Here's what's happening with your workforce today.</p>
                 </div>
             </div>

@@ -50,6 +50,16 @@ import AdminSettings from './pages/admin/AdminSettings';
 
 import './App.css';
 
+// Loading spinner shown while Supabase restores session
+const LoadingScreen = () => (
+  <div className="min-h-screen w-full flex items-center justify-center" style={{ background: '#059669' }}>
+    <div className="flex flex-col items-center gap-4">
+      <div className="w-12 h-12 border-4 border-white/30 border-t-white rounded-full animate-spin" />
+      <p className="text-white/70 text-sm">Loading...</p>
+    </div>
+  </div>
+);
+
 // Route guard component that redirects user-role users away from admin-only pages
 const AdminOnly = ({ children }: { children: React.ReactNode }) => {
   const { role } = useAuth();
@@ -59,9 +69,18 @@ const AdminOnly = ({ children }: { children: React.ReactNode }) => {
   return <>{children}</>;
 };
 
-// ADDED: Global Route Guard to prevent layout flickering on logout
+// Redirect logged-in users away from public pages (login, forgot-password)
+const PublicRoute = ({ children }: { children: React.ReactNode }) => {
+  const { isLoggedIn, loading } = useAuth();
+  if (loading) return <LoadingScreen />;
+  if (isLoggedIn) return <Navigate to="/dashboard" replace />;
+  return <>{children}</>;
+};
+
+// Global Route Guard to prevent layout flickering on logout
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const { isLoggedIn } = useAuth();
+  const { isLoggedIn, loading } = useAuth();
+  if (loading) return <LoadingScreen />;
   if (!isLoggedIn) {
     return <Navigate to="/login" replace />;
   }
@@ -72,11 +91,10 @@ function AppRoutes() {
   return (
     <Routes>
       {/* Public Routes */}
-      <Route path="/login" element={<Login />} />
-      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
+      <Route path="/forgot-password" element={<PublicRoute><ForgotPassword /></PublicRoute>} />
 
       {/* Protected Routes */}
-      {/* ADDED: Wrapped the Layout route in ProtectedRoute */}
       <Route path="/dashboard" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
         <Route index element={<Dashboard />} />
 

@@ -32,7 +32,7 @@ const ClearanceList = () => {
         Pending: 'badge-warning',
     };
 
-    const statusIcon: Record<string, JSX.Element> = {
+    const statusIcon: Record<string, React.JSX.Element> = {
         Approved: <CheckCircle size={12} />,
         Rejected: <XCircle size={12} />,
         Pending: <Clock size={12} />,
