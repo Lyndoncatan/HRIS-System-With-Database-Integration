@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { PhilippinePeso, TrendingDown, Percent, FileText, X, Download, Eye, Printer } from 'lucide-react';
+import { exportToPDF } from '../../lib/exportPdf';
 
 type Tab = 'records' | 'deductions' | '13th' | 'payslip';
 
@@ -63,6 +64,38 @@ const Payroll = () => {
         Generated: 'badge-success',
     };
 
+    const handleExportPayroll = () => {
+        exportToPDF({
+            title: 'Payroll Records',
+            headers: ['Period', 'Employees', 'Gross Pay', 'Deductions', 'Net Pay', 'Status'],
+            rows: payrollRecords.map(r => [r.period, r.employees, r.grossPay, r.deductions, r.netPay, r.status]),
+            filename: 'payroll_records',
+        });
+    };
+
+    const handleExport13th = () => {
+        exportToPDF({
+            title: '13th Month Pay Report',
+            headers: ['Employee ID', 'Name', 'Total Salary (YTD)', '13th Month Pay', 'Status'],
+            rows: thirteenthMonthData.map(r => [r.empId, r.name, r.totalSalary, r.thirteenthMonth, r.status]),
+            filename: '13th_month_pay',
+        });
+    };
+
+    const handleExportPayslip = (emp: any) => {
+        exportToPDF({
+            title: `Payslip — ${emp.name}`,
+            headers: ['Description', 'Amount'],
+            rows: [
+                ['Basic Salary', '₱25,000'], ['Overtime Pay', '₱2,500'], ['Allowances', '₱3,000'],
+                ['Total Earnings', '₱30,500'], ['SSS', '-₱800'], ['PhilHealth', '-₱400'],
+                ['Pag-IBIG', '-₱200'], ['Tax', '-₱600'], ['Total Deductions', '-₱2,000'],
+                ['Net Pay', emp.netPay],
+            ],
+            filename: `payslip_${emp.id}`,
+        });
+    };
+
     return (
         <div className="space-y-6">
             {/* Header */}
@@ -106,9 +139,14 @@ const Payroll = () => {
                     {/* Payroll Records Tab */}
                     {activeTab === 'records' && (
                         <div className="space-y-5">
-                            <div className="flex justify-between items-center">
+                            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                                 <h3 className="text-base font-bold text-gray-800">Payroll Records</h3>
-                                <button onClick={() => setShowProcessModal(true)} className="btn btn-primary">Process Payroll</button>
+                                <div className="flex gap-2">
+                                    <button onClick={handleExportPayroll} className="btn btn-secondary flex items-center gap-2">
+                                        <Download className="w-4 h-4" /> Export PDF
+                                    </button>
+                                    <button onClick={() => setShowProcessModal(true)} className="btn btn-primary">Process Payroll</button>
+                                </div>
                             </div>
                             <div className="overflow-x-auto rounded-xl border border-gray-100">
                                 <table className="pro-table">
@@ -131,10 +169,10 @@ const Payroll = () => {
                             {/* Summary */}
                             <div className="bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl p-5 border border-emerald-100">
                                 <h4 className="text-sm font-bold text-gray-700 mb-3">Payroll Summary</h4>
-                                <div className="grid grid-cols-3 gap-4 text-center">
-                                    <div><p className="text-xl font-bold text-gray-900">₱8,400,000</p><p className="text-xs text-gray-500">Total Gross</p></div>
-                                    <div><p className="text-xl font-bold text-red-500">₱1,700,000</p><p className="text-xs text-gray-500">Total Deductions</p></div>
-                                    <div><p className="text-xl font-bold text-emerald-600">₱6,700,000</p><p className="text-xs text-gray-500">Total Net</p></div>
+                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
+                                    <div><p className="text-base sm:text-xl font-bold text-gray-900">₱8,400,000</p><p className="text-xs text-gray-500">Total Gross</p></div>
+                                    <div><p className="text-base sm:text-xl font-bold text-red-500">₱1,700,000</p><p className="text-xs text-gray-500">Total Deductions</p></div>
+                                    <div><p className="text-base sm:text-xl font-bold text-emerald-600">₱6,700,000</p><p className="text-xs text-gray-500">Total Net</p></div>
                                 </div>
                             </div>
                         </div>
@@ -233,7 +271,7 @@ const Payroll = () => {
                                                 <span className={`badge text-[10px] ${statusBadge[emp.status]}`}><span className="badge-dot" />{emp.status}</span>
                                             </div>
                                             <button onClick={() => setShowPayslipPreview(true)} className="btn-ghost btn-icon text-blue-500 hover:bg-blue-50"><Eye className="w-4 h-4" /></button>
-                                            <button className="btn-ghost btn-icon text-gray-400 hover:bg-gray-100"><Download className="w-4 h-4" /></button>
+                                            <button onClick={() => handleExportPayslip(emp)} className="btn-ghost btn-icon text-gray-400 hover:bg-gray-100"><Download className="w-4 h-4" /></button>
                                         </div>
                                     </div>
                                 ))}
@@ -334,7 +372,7 @@ const Payroll = () => {
                             ))}
                         </div>
                         <div className="pro-modal-footer">
-                            <button className="btn btn-secondary"><Download className="w-4 h-4" /> Download PDF</button>
+                            <button onClick={handleExport13th} className="btn btn-secondary"><Download className="w-4 h-4" /> Download PDF</button>
                             <button onClick={() => setShow13thDetails(false)} className="btn btn-primary">Close</button>
                         </div>
                     </div>
@@ -394,7 +432,7 @@ const Payroll = () => {
                             </div>
                         </div>
                         <div className="flex justify-end gap-3 px-6 pb-5">
-                            <button className="btn btn-secondary"><Download className="w-4 h-4" /> Download PDF</button>
+                            <button onClick={handleExportPayroll} className="btn btn-secondary"><Download className="w-4 h-4" /> Download PDF</button>
                             <button onClick={() => setShowPayslipPreview(false)} className="btn btn-primary">Close</button>
                         </div>
                     </div>

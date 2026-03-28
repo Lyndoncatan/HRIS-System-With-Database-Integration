@@ -1003,3 +1003,86 @@ textarea {
   margin: 0 auto;
   padding: 0 var(--spacing-md);
 }
+
+/* ═══════════════════════════════════════════
+   MOBILE RESPONSIVE OVERRIDES
+   ═══════════════════════════════════════════ */
+
+@media (max-width: 639px) {
+  /* Smaller stat cards on mobile */
+  .stat-card {
+    padding: 0.875rem 1rem;
+  }
+
+  .stat-card .stat-value {
+    font-size: 1.375rem;
+  }
+
+  .stat-card .stat-icon {
+    width: 36px;
+    height: 36px;
+  }
+
+  /* Tabs wrap and scroll on mobile */
+  .pro-tabs {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .pro-tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .pro-tab {
+    padding: 0.4rem 0.875rem;
+    font-size: 0.75rem;
+  }
+
+  /* Smaller page headers */
+  .page-header h1 {
+    font-size: 1.25rem;
+  }
+
+  .page-header p {
+    font-size: 0.75rem;
+  }
+
+  /* Table cells smaller on mobile */
+  .pro-table tbody td,
+  .pro-table thead th {
+    padding: 0.5rem 0.625rem;
+    font-size: 0.7rem;
+  }
+
+  /* Modals take full width on mobile */
+  .pro-modal {
+    margin: 0.75rem;
+    max-height: 85vh;
+  }
+
+  .pro-modal-header {
+    padding: 1rem;
+  }
+
+  .pro-modal-body {
+    padding: 1rem;
+  }
+
+  .pro-modal-footer {
+    padding: 0.75rem 1rem;
+    flex-wrap: wrap;
+  }
+
+  /* Buttons slightly smaller */
+  .btn {
+    padding: 0.4rem 1rem;
+    font-size: 0.75rem;
+  }
+
+  .btn-icon {
+    width: 32px;
+    height: 32px;
+  }
+}

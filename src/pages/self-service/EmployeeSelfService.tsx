@@ -1,12 +1,15 @@
 import { User, FileText, Clock, Calendar, Download, Eye, Edit, ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useLeave } from '../../context/LeaveContext';
-
-const CURRENT_USER = 'Dela Cruz, Juan';
+import { useAuth } from '../../context/AuthContext';
 
 const EmployeeSelfService = () => {
     const navigate = useNavigate();
     const { leaveRequests } = useLeave();
+    const { user } = useAuth();
+
+    const displayName = user?.user_metadata?.full_name || user?.user_metadata?.name || user?.email?.split('@')[0] || 'Employee';
+    const initials = displayName.split(' ').map((n: string) => n.charAt(0).toUpperCase()).slice(0, 2).join('');
 
     const profile = {
         name: 'Juan Dela Cruz',
@@ -27,7 +30,6 @@ const EmployeeSelfService = () => {
 
     // Get current user's recent leaves from shared context
     const myLeaves = leaveRequests
-        .filter(r => r.employee === CURRENT_USER)
         .slice(0, 2);
 
     const payslips = [
@@ -58,11 +60,11 @@ const EmployeeSelfService = () => {
             <div className="rounded-2xl overflow-hidden animate-fade-in-up" style={{ background: 'linear-gradient(135deg, #059669, #10b981, #34d399)', animationDelay: '0.1s', opacity: 0 }}>
                 <div className="p-6 flex items-center gap-5">
                     <div className="w-16 h-16 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center text-white text-2xl font-bold border-2 border-white/30">
-                        JD
+                        {initials}
                     </div>
                     <div>
-                        <h2 className="text-xl font-bold text-white">{profile.name}</h2>
-                        <p className="text-emerald-100 text-sm">{profile.position} • {profile.department}</p>
+                        <h2 className="text-xl font-bold text-white">{displayName}</h2>
+                        <p className="text-emerald-100 text-sm">{user?.email}</p>
                         <span className="inline-flex items-center gap-1.5 mt-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-white/20 text-white backdrop-blur-sm">
                             <span className="w-1.5 h-1.5 rounded-full bg-emerald-200 animate-pulse" />Active Employee
                         </span>
@@ -168,8 +170,8 @@ const EmployeeSelfService = () => {
                             {myLeaves.length > 0 ? myLeaves.map((leave) => (
                                 <div key={leave.id} className="flex items-center justify-between py-2 border-b border-gray-50 last:border-0">
                                     <div>
-                                        <p className="text-sm font-bold text-gray-800">{leave.leaveType}</p>
-                                        <p className="text-xs text-gray-400 mt-0.5">{leave.startDate} - {leave.endDate}</p>
+                                <p className="text-sm font-bold text-gray-800">{leave.leave_type}</p>
+                                        <p className="text-xs text-gray-400 mt-0.5">{leave.start_date} - {leave.end_date}</p>
                                     </div>
                                     <span className={`badge ${statusBadge[leave.status]}`}>
                                         <span className="badge-dot" />{leave.status}

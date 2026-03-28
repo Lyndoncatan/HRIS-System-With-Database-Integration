@@ -1,11 +1,12 @@
 import { useState } from 'react';
-import { CheckCircle, AlertTriangle, XCircle, Clock, Upload, X, Plus, Check, Edit, Trash2, Search } from 'lucide-react';
+import { CheckCircle, AlertTriangle, XCircle, Clock, Upload, X, Plus, Check, Edit, Trash2, Search, Download } from 'lucide-react';
 import { useAttendance } from '../../context/AttendanceContext';
+import { exportToPDF } from '../../lib/exportPdf';
 
 type Tab = 'dtr' | 'overtime' | 'setup';
 
 const AttendanceTable = () => {
-    const { allRecords, setAllRecords } = useAttendance();
+    const { allRecords, loading, refreshAttendance } = useAttendance();
     const [activeTab, setActiveTab] = useState<Tab>('dtr');
     const [showUploadModal, setShowUploadModal] = useState(false);
     const [showOvertimeModal, setShowOvertimeModal] = useState(false);
@@ -38,12 +39,11 @@ const AttendanceTable = () => {
         { label: 'Total Hours', value: '1,760', icon: Clock, gradient: 'linear-gradient(135deg, #2563eb, #3b82f6)' }, // Changed to standard blue
     ];
 
-    // 1. DTR Records: from shared AttendanceContext (persisted in localStorage)
+    // 1. DTR Records: from shared AttendanceContext (persisted in Supabase)
     const dtrRecords = allRecords;
-    const setDtrRecords = setAllRecords;
 
-    const uniqueEmployees = Array.from(new Set(dtrRecords.map(r => r.employee))).sort();
-    const filteredEmployees = uniqueEmployees.filter(emp =>
+    const uniqueEmployees = Array.from(new Set(dtrRecords.map((r: any) => r.employee_name).filter(Boolean))).sort();
+    const filteredEmployees = uniqueEmployees.filter((emp: string) =>
         emp.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
@@ -79,19 +79,24 @@ const AttendanceTable = () => {
     };
 
     const handleSaveRecordEdit = () => {
-        // Format back to 12-hour format before saving so table looks correct
-        const formattedRecord = {
-            ...editRecordForm,
-            timeIn: convertTo12Hour(editRecordForm.timeIn),
-            timeOut: convertTo12Hour(editRecordForm.timeOut)
-        };
-        setDtrRecords((prev: any[]) => prev.map(r => r.id === editRecordForm.id ? formattedRecord : r));
+        // TODO: Update record in Supabase
         setShowEditRecordModal(false);
+        refreshAttendance();
     };
 
     const handleDeleteRecord = (record: any) => {
-        if (!window.confirm(`Are you sure you want to delete the attendance record for ${record.employee}?`)) return;
-        setDtrRecords((prev: any[]) => prev.filter(r => r.id !== record.id));
+        if (!window.confirm(`Are you sure you want to delete the attendance record for ${record.employee_name}?`)) return;
+        // TODO: Delete from Supabase
+        refreshAttendance();
+    };
+
+    const handleExportPDF = () => {
+        exportToPDF({
+            title: 'Attendance Records',
+            headers: ['Name', 'Date', 'Time In', 'Time Out', 'Status', 'Hours', 'Overtime'],
+            rows: dtrRecords.map((r: any) => [r.employee_name, r.date, r.time_in, r.time_out, r.status, r.hours, r.overtime]),
+            filename: 'attendance_records',
+        });
     };
 
     // 2. Overtime Requests: State with mock data
@@ -274,11 +279,16 @@ const AttendanceTable = () => {
                     {/* Daily Time Record Tab */}
                     {activeTab === 'dtr' && (
                         <div className="space-y-6">
-                            <div className="flex justify-between items-center">
-                                <h3 className="text-base font-bold text-gray-800">Attendance Records</h3>
-                                <button onClick={() => setShowUploadModal(true)} className="btn btn-primary">
-                                    <Upload className="w-4 h-4" /> Upload DTR
-                                </button>
+                            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                                <h3 className="text-base font-bold text-gray-800">Attendance Records {loading && '(Loading...)'}</h3>
+                                <div className="flex gap-2">
+                                    <button onClick={handleExportPDF} className="btn btn-secondary flex items-center gap-2">
+                                        <Download className="w-4 h-4" /> Export PDF
+                                    </button>
+                                    <button onClick={() => setShowUploadModal(true)} className="btn btn-primary">
+                                        <Upload className="w-4 h-4" /> Upload DTR
+                                    </button>
+                                </div>
                             </div>
 
                             <div className="overflow-x-auto rounded-xl border border-gray-100">
@@ -291,15 +301,15 @@ const AttendanceTable = () => {
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {dtrRecords.map((r, i) => (
+                                        {dtrRecords.map((r: any, i: number) => (
                                             <tr key={r.id || i}>
-                                                <td className="font-mono text-xs">{r.empId}</td>
-                                                <td className="!font-medium !text-gray-800">{r.employee}</td>
-                                                <td>{r.timeIn}</td>
-                                                <td>{r.timeOut}</td>
+                                                <td className="font-mono text-xs">{r.id}</td>
+                                                <td className="!font-medium !text-gray-800">{r.employee_name}</td>
+                                                <td className="whitespace-nowrap">{r.time_in}</td>
+                                                <td className="whitespace-nowrap">{r.time_out}</td>
                                                 <td><span className={`badge ${statusBadge[r.status]}`}><span className="badge-dot" />{r.status}</span></td>
-                                                <td>{r.late}</td>
-                                                <td>{r.overtime}</td>
+                                                <td>{r.hours || '-'}</td>
+                                                <td>{r.overtime || '-'}</td>
                                                 <td>
                                                     <div className="flex gap-1 justify-center">
                                                         <button onClick={() => handleEditRecordClick(r)} className="btn-ghost btn-icon text-blue-500 hover:bg-blue-50" title="Edit">
@@ -462,7 +472,7 @@ const AttendanceTable = () => {
                             <div>
                                 <label className="pro-label">Employee</label>
                                 {/* FIX: use editRecordForm.employee instead of editRecordForm.name */}
-                                <input type="text" value={editRecordForm.employee || ''} disabled className="pro-input bg-gray-50 text-gray-500 cursor-not-allowed" />
+                                <input type="text" value={editRecordForm.employee_name || ''} disabled className="pro-input bg-gray-50 text-gray-500 cursor-not-allowed" />
                             </div>
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
