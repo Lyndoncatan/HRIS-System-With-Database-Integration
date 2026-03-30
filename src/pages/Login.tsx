@@ -14,7 +14,7 @@ const Login: FC = () => {
     const [error, setError] = useState<string | null>(null);
     const [isSignUp, setIsSignUp] = useState(false);
     const navigate = useNavigate();
-    const { setRole, signInWithEmail, signUpWithEmail, signInWithGoogle } = useAuth();
+    const { signInWithEmail, signUpWithEmail, signInWithGoogle } = useAuth();
 
     const handleLogin = async (e: FormEvent) => {
         e.preventDefault();
@@ -35,7 +35,7 @@ const Login: FC = () => {
                 return;
             }
 
-            setRole(loginMode);
+            // Role is now auto-loaded from Supabase profiles table
 
             if (isSignUp) {
                 setError(null);
@@ -57,7 +57,7 @@ const Login: FC = () => {
 
     const handleGoogleLogin = async () => {
         setError(null);
-        setRole(loginMode);
+        // Role is now auto-loaded from Supabase profiles table
         const result = await signInWithGoogle();
         if (result.error) {
             setError(result.error);

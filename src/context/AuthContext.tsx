@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
 import { supabase } from '../lib/supabase';
 import type { User, Session } from '@supabase/supabase-js';
+import { fetchProfile } from '../lib/database';
 
 export type UserRole = 'user' | 'admin';
 
@@ -31,22 +32,42 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const [session, setSession] = useState<Session | null>(null);
     const [loading, setLoading] = useState(true);
 
+    // Fetch the user's role from the Supabase profiles table
+    const loadRoleFromProfile = async (userId: string) => {
+        try {
+            const { data } = await fetchProfile(userId);
+            if (data && data.role) {
+                const mappedRole: UserRole = data.role === 'admin' ? 'admin' : 'user';
+                setRole(mappedRole);
+                localStorage.setItem('user_role', mappedRole);
+            }
+        } catch (err) {
+            console.error('Error fetching profile role:', err);
+        }
+    };
+
     // Listen for Supabase auth state changes
     useEffect(() => {
-        // Get the initial session
         supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
             setSession(currentSession);
             setUser(currentSession?.user ?? null);
             setIsLoggedIn(!!currentSession);
+            // Fetch role from DB
+            if (currentSession?.user) {
+                loadRoleFromProfile(currentSession.user.id);
+            }
             setLoading(false);
         });
 
-        // Subscribe to auth changes (login, logout, token refresh)
         const { data: { subscription } } = supabase.auth.onAuthStateChange(
             (_event, newSession) => {
                 setSession(newSession);
                 setUser(newSession?.user ?? null);
                 setIsLoggedIn(!!newSession);
+                // Fetch role from DB on login
+                if (newSession?.user) {
+                    loadRoleFromProfile(newSession.user.id);
+                }
             }
         );
 
