@@ -18,7 +18,7 @@ export interface AttendanceRow {
 
 /** Insert a new attendance log */
 export async function insertAttendance(log: Omit<AttendanceRow, 'id' | 'created_at'>) {
-  const { data, error } = await supabase.from('attendance_logs').insert(log).select().single();
+  const { data, error } = await supabase.from('attendance_logs').insert(log);
   return { data, error };
 }
 
@@ -60,7 +60,7 @@ export interface LeaveRow {
 
 /** Insert a new leave request */
 export async function insertLeaveRequest(req: Omit<LeaveRow, 'id' | 'created_at'>) {
-  const { data, error } = await supabase.from('leave_requests').insert(req).select().single();
+  const { data, error } = await supabase.from('leave_requests').insert(req);
   return { data, error };
 }
 
@@ -121,13 +121,13 @@ export async function fetchAllProfiles() {
   return { data: data ?? [], error };
 }
 
-/** Fetch a single profile */
+/** Fetch a single profile by ID */
 export async function fetchProfile(userId: string) {
   const { data, error } = await supabase
     .from('profiles')
     .select('*')
     .eq('id', userId)
-    .single();
+    .maybeSingle();
   return { data, error };
 }
 

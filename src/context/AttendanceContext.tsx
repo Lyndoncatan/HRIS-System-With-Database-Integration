@@ -75,14 +75,19 @@ export const AttendanceProvider = ({ children }: { children: ReactNode }) => {
 
     // Submit a new log to Supabase
     const submitAttendanceLog = async (log: Omit<AttendanceLog, 'id' | 'created_at'>) => {
-        const { error } = await insertAttendance(log);
-        if (error) {
-            console.error('Error inserting attendance:', error);
+        try {
+            const { error } = await insertAttendance(log);
+            if (error) {
+                console.error('Error inserting attendance:', error);
+                alert('Failed to submit attendance log: ' + error.message);
+                return;
+            }
+            // Refresh data from DB
+            await refreshAttendance();
+        } catch (err) {
+            console.error('Unexpected error:', err);
             alert('Failed to submit attendance log. Please try again.');
-            return;
         }
-        // Refresh data from DB
-        await refreshAttendance();
     };
 
     return (
