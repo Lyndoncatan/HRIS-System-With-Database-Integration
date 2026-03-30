@@ -148,6 +148,9 @@ const Sidebar = ({ isMobileOpen, onClose, collapsed = false, onToggleCollapse }:
                                 </div>
                             )}
                             <div className="min-w-0">
+                                <span className={`inline-block text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full mb-1 ${role === 'admin' ? 'bg-amber-400/20 text-amber-300' : 'bg-emerald-400/20 text-emerald-300'}`}>
+                                    {role === 'admin' ? 'Administrator' : 'Employee'}
+                                </span>
                                 <p className="text-white text-xs font-semibold truncate">{displayName}</p>
                                 <p className="text-emerald-300/50 text-[10px] truncate">{userEmail}</p>
                             </div>
